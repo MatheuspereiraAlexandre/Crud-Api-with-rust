@@ -8,4 +8,4 @@ tokio = { version = "1.47", features = ["full"]} # para funcionar o async
 axum = "0.8" # FrameWork Web
 serde = {version ="1.0", features = ["derive"]} #Para serializer/desserializar JSON
 serde_json = "1.0" #JSON
-mongodb = {version = "3.2", features = ["tokio-runtime"]} #driver async
+mongodb =  "3.2"

@@ -3,12 +3,11 @@ use axum::extract::State;
 use axum::{Router, routing::get, routing::post}; // importa coisas
 use mongodb::{Client, Collection, options::ClientOptions};
 use serde::{Deserialize, Serialize};
-use std::fmt::format;
-use std::sync::Arc;
-use std::sync::Mutex; // mongo db adicionado no caso a importação
+use std::sync::Arc; // pra compartilhar estado entre threads
+use tokio::sync::Mutex; // mutex assíncrono pq o std::sync trava o await
 
-#[allow(dead_code)] // isso daqui é pra parar a frecsura do erro do crlh
-#[derive(Debug, Deserialize)] // permite transformar o json em struct rust coisas loucas essas
+#[allow(dead_code)] // isso daqui é pra parar a frescura do erro do crlh
+#[derive(Debug, Serialize, Deserialize)] // permite transformar o json em struct rust coisas loucas essas
 struct CreateUser {
     name: String,  // usa string
     email: String, // e tbm usa string
@@ -20,38 +19,44 @@ struct ApiResponse {
     message: String, // e string pq sim
 }
 
-#[derive(Default)]
+// estado da aplicação
 struct AppState {
-    user_collection: Collection<CreateUser>, // v
+    user_collection: Collection<CreateUser>, // coleção do mongo
 }
 
 #[tokio::main] // define o tokio q é pra usar async
 async fn main() {
+    // configura o mongo client
     let client_options = ClientOptions::parse("mongodb://localhost:27017")
         .await
         .unwrap();
     let client = Client::with_options(client_options).unwrap();
-    let database = client.database("CrudRust");
-    let user_collection = database.collection::<CreateUser>("users");
+    let database = client.database("CrudRust"); // nome do banco
+    let user_collection = database.collection::<CreateUser>("users"); // nome da coleção
+
+    // coloca o estado dentro de Arc + Mutex pra compartilhar entre as rotas isso dá um trampo ein
     let state = Arc::new(Mutex::new(AppState { user_collection }));
 
-    // construindo uma rota
+    // construindo as rotas
     let app: Router = Router::new()
-        .route("/", get(|| async { "hello-world" }))
-        .route("/ola", get(|| async { "olá-mundo" }))
-        .route("/post", post(create_user))
-        .with_state(state);
+        .route("/SignUp", post(create_user)) // rota POST para criar user
+        .with_state(state); // injeta o estado
 
-    let addr: &'static str = "0.0.0.0:3000";
-    let listener_server = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener_server, app).await.unwrap();
+    let addr: &'static str = "0.0.0.0:3000"; // address do server
+    let listener_server = tokio::net::TcpListener::bind(addr)
+        .await
+        .unwrap(); // inicia o tcp listener, lembra oq é tcp aula do iury protocolo de controle de transmissão
+    axum::serve(listener_server, app)
+        .await
+        .unwrap(); // vai iniciar o server com esses parametros
 }
 
 async fn create_user(
-    State(state): State<Arc<Mutex<AppState>>>,
-    Json(payload): Json<CreateUser>,
+    State(state): State<Arc<Mutex<AppState>>>, // pega o estado compartilhado
+    Json(payload): Json<CreateUser>,           // pega o json enviado
 ) -> Json<ApiResponse> {
-    match state.user_collection.insert_one(payload, none).await {
+    let state = state.lock().await; // pega o acesso ao banco (await pq mutex é async)
+    match state.user_collection.insert_one(payload).await {
         Ok(_) => Json(ApiResponse {
             success: true,
             message: "usuario foi colocado no bd".into(),
