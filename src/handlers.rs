@@ -17,12 +17,12 @@ pub struct CreateUserResponse {
     pub success: bool,
     pub message: String,
 }
-
+#[derive(Deserialize, Serialize)]
 pub struct DeleteUserRequest {
     pub name: String,
     pub email: String,
 }
-
+#[derive(Serialize)]
 pub struct DeleteUserResponse {
     pub success: bool,
     pub message: String,
@@ -33,7 +33,7 @@ pub async fn create_user(
     Json(payload): Json<CreateUserRequest>,
 ) -> Json<CreateUserResponse> {
     let state = state.lock().await;
-    match state.db.insert_one(payload).await {
+    match state.db_insert.insert_one(payload).await {
         Ok(_) => Json(CreateUserResponse {
             success: true,
             message: "usuario foi colocado no bd".into(),
@@ -52,13 +52,12 @@ pub async fn delete_user(
     let state = state.lock().await;
 
     let filtrer = doc! {"name": &payload.name, "email": &payload.email, };
-    match state.db.delete_one(filtrer).await {
+    match state.db_delete.delete_one(filtrer).await {
         Ok(_) => Json(
-            (DeleteUserResponse {
+            DeleteUserResponse {
                 success: true,
                 message: "usuario deltado com sucesso".into(),
             }),
-        ),
         Err(err) => Json(DeleteUserResponse {
             success: false,
             message: format!("erro {}", err),

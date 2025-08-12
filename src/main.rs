@@ -10,18 +10,22 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 use crate::handlers::CreateUserRequest;
+use crate::handlers::DeleteUserRequest;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db: mongodb::Collection<CreateUserRequest>, // conexão Mongo
+    pub db_insert: mongodb::Collection<CreateUserRequest>, // conexão Mongo
+    pub db_delete: mongodb::Collection<DeleteUserRequest>,
 }
 
 #[tokio::main]
 async fn main() {
     let db = init_db().await; //conecta ao mongo
-    let user_collection = db.collection::<CreateUserRequest>("users");
+    let insert_user: mongodb::Collection<CreateUserRequest> = db.collection::<CreateUserRequest>("users");
+    let delete_user: mongodb::Collection<DeleteUserRequest> = db.collection::<DeleteUserRequest>("users");
     let state = AppState {
-        db: user_collection,
+        db_insert: insert_user,
+        db_delete: delete_user,
     };
     let shared_state = Arc::new(Mutex::new(state));
 
