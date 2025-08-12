@@ -1,5 +1,5 @@
 // src/db.rs
-use mongodb::{options::ClientOptions, Client, Database};
+use mongodb::{Client, Database, options::ClientOptions};
 
 pub async fn init_db() -> Database {
     let client_uri = "mongodb://localhost:27017"; // fala a url do mongo

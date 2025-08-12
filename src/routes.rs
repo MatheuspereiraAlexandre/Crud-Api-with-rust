@@ -1,13 +1,13 @@
-use tokio::sync::Mutex;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use axum::{ 
-    routing::{get, post},
+use axum::{
     Router,
+    routing::{get, post},
 };
 
-use crate::handlers::{create_user, health_check}; // importa os handlers
 use crate::AppState;
+use crate::handlers::{create_user, health_check}; // importa os handlers
 
 pub fn create_router(state: Arc<Mutex<AppState>>) -> Router {
     Router::new()
