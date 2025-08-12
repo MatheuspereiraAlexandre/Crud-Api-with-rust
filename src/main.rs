@@ -52,7 +52,13 @@ async fn create_user(
     Json(payload): Json<CreateUser>,
 ) -> Json<ApiResponse> {
     match state.user_collection.insert_one(payload, none).await {
-        Ok(_) => Json(ApiResponse {success: true, message: "usuario foi colocado no bd".into() }),
-        Err(err) => Json(ApiResponse {success: false, message: format!("erro {}", err)}),
+        Ok(_) => Json(ApiResponse {
+            success: true,
+            message: "usuario foi colocado no bd".into(),
+        }),
+        Err(err) => Json(ApiResponse {
+            success: false,
+            message: format!("erro {}", err),
+        }),
     }
 }
