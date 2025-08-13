@@ -9,23 +9,27 @@ use routes::create_router;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::handlers::CreateUserRequest;
-use crate::handlers::DeleteUserRequest;
+use crate::handlers::{CreateUserRequest, DeleteUserRequest, EditUserRequest};
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db_insert: mongodb::Collection<CreateUserRequest>, // conexão Mongo
-    pub db_delete: mongodb::Collection<DeleteUserRequest>,
+    pub db_insert: mongodb::Collection<CreateUserRequest>, //
+    pub db_delete: mongodb::Collection<DeleteUserRequest>, //
+    pub db_put: mongodb::Collection<EditUserRequest>,
 }
 
 #[tokio::main]
 async fn main() {
     let db = init_db().await; //conecta ao mongo
-    let insert_user: mongodb::Collection<CreateUserRequest> = db.collection::<CreateUserRequest>("users");
-    let delete_user: mongodb::Collection<DeleteUserRequest> = db.collection::<DeleteUserRequest>("users");
+    let insert_user: mongodb::Collection<CreateUserRequest> =
+        db.collection::<CreateUserRequest>("users");
+    let delete_user: mongodb::Collection<DeleteUserRequest> =
+        db.collection::<DeleteUserRequest>("users");
+    let edit_user: mongodb::Collection<EditUserRequest> = db.collection::<EditUserRequest>("users");
     let state = AppState {
         db_insert: insert_user,
         db_delete: delete_user,
+        db_put: edit_user,
     };
     let shared_state = Arc::new(Mutex::new(state));
 

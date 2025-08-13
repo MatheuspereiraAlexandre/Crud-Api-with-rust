@@ -28,6 +28,25 @@ pub struct DeleteUserResponse {
     pub message: String,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct EditUserRequest {
+    pub name: String,
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct EditUserResponse {
+    pub success: bool,
+    pub message: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct EditedUserRequest {
+    pub name: String,
+    pub email: String,
+}
+
+
 pub async fn create_user(
     State(state): State<Arc<Mutex<AppState>>>,
     Json(payload): Json<CreateUserRequest>,
@@ -53,11 +72,10 @@ pub async fn delete_user(
 
     let filtrer = doc! {"name": &payload.name, "email": &payload.email, };
     match state.db_delete.delete_one(filtrer).await {
-        Ok(_) => Json(
-            DeleteUserResponse {
-                success: true,
-                message: "usuario deltado com sucesso".into(),
-            }),
+        Ok(_) => Json(DeleteUserResponse {
+            success: true,
+            message: "usuario deltado com sucesso".into(),
+        }),
         Err(err) => Json(DeleteUserResponse {
             success: false,
             message: format!("erro {}", err),
@@ -65,6 +83,29 @@ pub async fn delete_user(
     }
 }
 
+pub async fn edit_user(
+    State(state): State<Arc<Mutex<AppState>>>,
+    Json(payload): Json<EditedUserRequest>,
+) -> Json<EditUserResponse> {
+    let state = state.lock().await;
+    let update = doc! {
+        "$set": {
+            "name": &payload.name,
+            "email": &payload.email
+        }
+    };
+    let filtrer = doc! {"name": &payload.name, "email": &payload.email };
+    match state.db_put.update_one(filtrer, update).await {
+        Ok(_) => Json(EditUserResponse {
+            success: true,
+            message: "foi editado com sucesso".into(),
+        }),
+        Err(err) => Json(EditUserResponse {
+            success: false,
+            message: format!("Deu erro ai camarada {}", err),
+        }),
+    }
+}
 pub async fn health_check() -> &'static str {
     "servidor online"
 }
