@@ -30,8 +30,10 @@ pub struct DeleteUserResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct EditUserRequest {
-    pub name: String,
-    pub email: String,
+    pub old_name: String,
+    pub old_email: String,
+    pub new_name: String,
+    pub new_email: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -39,13 +41,6 @@ pub struct EditUserResponse {
     pub success: bool,
     pub message: String,
 }
-
-#[derive(Deserialize, Serialize)]
-pub struct EditedUserRequest {
-    pub name: String,
-    pub email: String,
-}
-
 
 pub async fn create_user(
     State(state): State<Arc<Mutex<AppState>>>,
@@ -84,17 +79,18 @@ pub async fn delete_user(
 }
 
 pub async fn edit_user(
+    // acho que sinceramente isso daqui é a pior desgraça que eu já mexi fiquei 2h tentando encontrar oque tava de errado
     State(state): State<Arc<Mutex<AppState>>>,
-    Json(payload): Json<EditedUserRequest>,
+    Json(payload): Json<EditUserRequest>,
 ) -> Json<EditUserResponse> {
     let state = state.lock().await;
-    let update = doc! {
+    let update = doc! { // essa porra aqui sempre lembrar sempre
         "$set": {
-            "name": &payload.name,
-            "email": &payload.email
+            "name": &payload.new_name,
+            "email": &payload.new_email
         }
     };
-    let filtrer = doc! {"name": &payload.name, "email": &payload.email };
+    let filtrer = doc! {"name": &payload.old_name, "email": &payload.old_email };
     match state.db_put.update_one(filtrer, update).await {
         Ok(_) => Json(EditUserResponse {
             success: true,
