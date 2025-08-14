@@ -42,12 +42,42 @@ pub struct EditUserResponse {
     pub message: String,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct SearchUserRequest {
+    pub email: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchUserResponse {
+    pub success: bool,
+    pub message: String,
+}
+
 pub async fn create_user(
     State(state): State<Arc<Mutex<AppState>>>,
     Json(payload): Json<CreateUserRequest>,
 ) -> Json<CreateUserResponse> {
-    let state = state.lock().await;
-    match state.db_insert.insert_one(payload).await {
+    let filter = doc! {
+        "email": &payload.email,
+    };
+    let state_locked = state.lock().await;
+    match state_locked.db_insert.find_one(filter.clone()).await {
+        Ok(Some(_)) => {
+            // se encontrou, retorna erro
+            return Json(CreateUserResponse {
+                success: false,
+                message: "já existe um mano ai".into(),
+            });
+        }
+        Ok(None) => {}
+        Err(err) => {
+            return Json(CreateUserResponse {
+                success: false,
+                message: format!("deu erro: {}", err),
+            });
+        }
+    }
+    match state_locked.db_insert.insert_one(payload).await {
         Ok(_) => Json(CreateUserResponse {
             success: true,
             message: "usuario foi colocado no bd".into(),
@@ -102,6 +132,29 @@ pub async fn edit_user(
         }),
     }
 }
+
+pub async fn search_user(
+    State(state): State<Arc<Mutex<AppState>>>,
+    Json(payload): Json<SearchUserRequest>,
+) -> Json<SearchUserResponse> {
+    let state = state.lock().await;
+    let filter = doc! {"email": &payload.email};
+    match state.db_search.find_one(filter).await {
+        Ok(Some(user)) => Json(SearchUserResponse {
+            success: true,
+            message: format!("usuario nao foi encxontrado {}", user.email),
+        }),
+        Ok(None) => Json(SearchUserResponse {
+            success: false,
+            message: "usuario nao encontrado".into(),
+        }),
+        Err(err) => Json(SearchUserResponse {
+            success: false,
+            message: format!("ocorreu na hora da procura {}", err),
+        }),
+    }
+}
+
 pub async fn health_check() -> &'static str {
     "servidor online"
 }

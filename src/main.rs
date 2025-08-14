@@ -9,13 +9,14 @@ use routes::create_router;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::handlers::{CreateUserRequest, DeleteUserRequest, EditUserRequest};
+use crate::handlers::{CreateUserRequest, DeleteUserRequest, EditUserRequest, SearchUserRequest};
 
 #[derive(Clone)]
 pub struct AppState {
     pub db_insert: mongodb::Collection<CreateUserRequest>, //
     pub db_delete: mongodb::Collection<DeleteUserRequest>, //
     pub db_put: mongodb::Collection<EditUserRequest>,
+    pub db_search: mongodb::Collection<SearchUserRequest>,
 }
 
 #[tokio::main] // define o main do app usando tokio 
@@ -26,10 +27,13 @@ async fn main() {
     let delete_user: mongodb::Collection<DeleteUserRequest> =
         db.collection::<DeleteUserRequest>("users"); // deleta
     let edit_user: mongodb::Collection<EditUserRequest> = db.collection::<EditUserRequest>("users"); // edita o usuario
+    let search_user: mongodb::Collection<SearchUserRequest> =
+        db.collection::<SearchUserRequest>("users");
     let state = AppState {
         db_insert: insert_user,
         db_delete: delete_user,
         db_put: edit_user,
+        db_search: search_user,
     };
     let shared_state = Arc::new(Mutex::new(state)); // cria o estado compartilhado lembre de mutex o conceito no caso de multithreading
 
