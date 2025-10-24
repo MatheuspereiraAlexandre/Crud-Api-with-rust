@@ -13,8 +13,8 @@ use crate::handlers::{CreateUserRequest, DeleteUserRequest, EditUserRequest, Sea
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db_insert: mongodb::Collection<CreateUserRequest>, //
-    pub db_delete: mongodb::Collection<DeleteUserRequest>, //
+    pub db_insert: mongodb::Collection<CreateUserRequest>, // sla
+    pub db_delete: mongodb::Collection<DeleteUserRequest>, // sla
     pub db_put: mongodb::Collection<EditUserRequest>,
     pub db_search: mongodb::Collection<SearchUserRequest>,
 }

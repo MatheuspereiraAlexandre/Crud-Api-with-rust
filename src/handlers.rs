@@ -1,5 +1,5 @@
 use mongodb::bson::doc;
-use std::sync::Arc;
+use std::{sync::Arc};
 use tokio::sync::Mutex;
 
 use crate::AppState;
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct CreateUserRequest {
     pub name: String,
     pub email: String,
+    pub password: String,
 }
 
 #[derive(Serialize)]
