@@ -1,5 +1,5 @@
 [package]
-name = "Crud-api"
+name = "Lume-Server"
 version = "0.1.0"
 edition = "2024"
 
@@ -9,3 +9,4 @@ axum = "0.8" # FrameWork Web
 serde = {version ="1.0", features = ["derive"]} #Para serializer/desserializar JSON
 serde_json = "1.0" #JSON
 mongodb =  "3.2"
+dotenv = "0.15"

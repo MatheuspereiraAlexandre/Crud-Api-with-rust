@@ -1,15 +1,18 @@
 // src/main.rs
-mod db;
+mod router;
 mod handlers;
-mod routes;
 
 use axum::Router;
-use db::init_db;
-use routes::create_router;
+use router::create_router;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::handlers::{CreateUserRequest, DeleteUserRequest, EditUserRequest, SearchUserRequest};
+//for bd_init
+use mongodb::{Client, Database, options::ClientOptions};
+use dotenv::dotenv;
+use std::env;
+
+use handlers::models::{CreateUserRequest, DeleteUserRequest, EditUserRequest, SearchUserRequest};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -22,6 +25,7 @@ pub struct AppState {
 #[tokio::main] // define o main do app usando tokio 
 async fn main() {
     let db = init_db().await; //conecta ao mongo
+
     let insert_user: mongodb::Collection<CreateUserRequest> =
         db.collection::<CreateUserRequest>("users"); // cria o usuario lá
     let delete_user: mongodb::Collection<DeleteUserRequest> =
@@ -42,4 +46,15 @@ async fn main() {
     let addr: &'static str = "0.0.0.0:3000"; // address do server 
     let listener_server = tokio::net::TcpListener::bind(addr).await.unwrap(); // inicia o tcp listener, lembra oq é tcp aula do iury protocolo de controle de transmissão
     axum::serve(listener_server, app).await.unwrap(); // vai iniciar o server com esses parametros
+}
+
+pub async fn init_db() -> Database {
+    dotenv().ok();
+
+    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL não definida no .env");
+
+    let options = ClientOptions::parse(&db_url).await.unwrap();
+    let client = Client::with_options(options).unwrap();
+
+    client.database("Lume")
 }

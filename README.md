@@ -1,0 +1,1 @@
+Codigo retomado para uso do Lume a plataforma de gestão pedagogica dinamica, esse é o back-end
