@@ -7,7 +7,7 @@ use router::create_router;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-//for bd_init
+//for db_init
 use mongodb::{Client, Database, options::ClientOptions};
 use dotenv::dotenv;
 use std::env;
@@ -51,7 +51,7 @@ async fn main() {
 pub async fn init_db() -> Database {
     dotenv().ok();
 
-    let db_url = env::var("DATABASE_URL").expect("DATABASE_URL não definida no .env");
+    let db_url = env::var("DATABASE_URL_TEST").expect("DATABASE_URL não definida no .env");
 
     let options = ClientOptions::parse(&db_url).await.unwrap();
     let client = Client::with_options(options).unwrap();

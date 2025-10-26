@@ -97,21 +97,23 @@ pub async fn search_user(
 ) -> Json<SearchUserResponse> {
     let state = state.lock().await;
     let filter = doc! {"email": &payload.email};
+
     match state.db_search.find_one(filter).await {
         Ok(Some(user)) => Json(SearchUserResponse {
             success: true,
-            message: format!("usuario nao foi encxontrado {}", user.email),
+            message: format!("Usuário encontrado: {}", user.email),
         }),
         Ok(None) => Json(SearchUserResponse {
             success: false,
-            message: "usuario nao encontrado".into(),
+            message: "Usuário não encontrado".into(),
         }),
         Err(err) => Json(SearchUserResponse {
             success: false,
-            message: format!("ocorreu na hora da procura {}", err),
+            message: format!("Erro ao procurar usuário: {}", err),
         }),
     }
 }
+
 
 pub async fn health_check() -> &'static str {
     "servidor online"

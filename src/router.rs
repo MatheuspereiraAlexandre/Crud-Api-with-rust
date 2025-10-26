@@ -11,7 +11,7 @@ use crate::AppState;
 
 pub fn create_router(state: Arc<Mutex<AppState>>) -> Router {
     Router::new()
-        .route("/signUp", post(create_user)) // rota POST para criar user
+        .route("/signUp", post(create_user))
         .route("/health", get(health_check))
         .route("/delete", delete(delete_user))
         .route("/edit", put(edit_user))
