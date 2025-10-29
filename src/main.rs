@@ -1,4 +1,4 @@
-// src/main.rs
+
 mod db;
 mod handlers;
 mod routes;
