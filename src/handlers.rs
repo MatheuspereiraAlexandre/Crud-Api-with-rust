@@ -1,4 +1,3 @@
-// src/handlers.rs
 use axum::{extract::State, Json};
 use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::results::DeleteResult;
